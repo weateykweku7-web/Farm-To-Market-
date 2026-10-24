@@ -1,0 +1,422 @@
+<!DOCTYPE html><html lang="en"><head><meta name="x-poe-datastore-behavior" content="local_only"><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FarmLink — Farm to Market</title>
+  <style>
+    :root {
+      --green: #176b45;
+      --green-dark: #104c33;
+      --green-light: #eaf4ed;
+      --cream: #faf9f5;
+      --ink: #202b25;
+      --muted: #707a73;
+      --line: #e7e9e4;
+      --white: #fff;
+      --orange: #ef9c45;
+      --shadow: 0 10px 30px rgba(25, 56, 38, .08);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--cream); }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .shell { width: min(1200px, calc(100% - 40px)); margin: 0 auto; }
+
+    header {
+      position: sticky; top: 0; z-index: 5;
+      background: rgba(255,255,255,.95); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+    }
+    .nav { height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 21px; color: var(--green-dark); }
+    .brand-mark { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 12px; background: var(--green); color: white; }
+    .nav-links { display: flex; align-items: center; gap: 26px; }
+    .nav-links a { text-decoration: none; color: #4f5b53; font-size: 14px; font-weight: 600; }
+    .nav-actions { display: flex; gap: 10px; align-items: center; }
+    .currency { border: 1px solid var(--line); padding: 10px; border-radius: 10px; background: white; color: var(--ink); }
+    .btn { border: 0; border-radius: 10px; padding: 11px 16px; font-weight: 700; transition: .2s; }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary { color: white; background: var(--green); }
+    .btn-primary:hover { background: var(--green-dark); }
+    .btn-light { color: var(--green); background: var(--green-light); }
+    .btn-outline { color: var(--green); background: white; border: 1px solid #cbdccd; }
+
+    .hero {
+      margin-top: 24px; min-height: 330px; border-radius: 24px; overflow: hidden;
+      background: linear-gradient(105deg, rgba(13,62,39,.94), rgba(20,88,54,.78)),
+        radial-gradient(circle at 85% 15%, #8eba73, transparent 34%),
+        linear-gradient(135deg, #739552, #d4b66c);
+      color: white; display: flex; align-items: center; padding: 52px;
+      position: relative;
+    }
+    .hero::after { content: "🌾"; position: absolute; right: 8%; bottom: -10px; font-size: 170px; opacity: .22; transform: rotate(-12deg); }
+    .hero-copy { position: relative; z-index: 1; max-width: 620px; }
+    .eyebrow { text-transform: uppercase; letter-spacing: .14em; font-size: 11px; font-weight: 800; color: #d3ebd8; }
+    h1 { font-size: clamp(34px, 5vw, 54px); line-height: 1.04; margin: 14px 0; letter-spacing: -.04em; }
+    .hero p { color: #e3eee5; max-width: 500px; line-height: 1.6; margin: 0 0 24px; }
+    .hero .btn { background: #fff; color: var(--green-dark); }
+
+    .search-panel {
+      margin: -28px auto 34px; position: relative; z-index: 2; background: white;
+      border: 1px solid var(--line); border-radius: 16px; padding: 12px;
+      display: grid; grid-template-columns: 1fr 190px 140px; gap: 10px;
+      box-shadow: var(--shadow); max-width: 920px;
+    }
+    .search-field { display: flex; align-items: center; gap: 10px; padding: 0 12px; }
+    .search-field input { border: 0; outline: 0; width: 100%; padding: 12px 0; color: var(--ink); }
+    .search-panel select { border: 1px solid var(--line); border-radius: 10px; padding: 0 12px; background: white; color: var(--ink); }
+
+    .section-head { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin: 36px 0 18px; }
+    .section-head h2 { margin: 0; font-size: 27px; letter-spacing: -.03em; }
+    .section-head p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+    .text-link { border: 0; background: none; color: var(--green); font-weight: 700; }
+
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+    .chip { border: 1px solid var(--line); background: white; color: #5d675f; padding: 9px 14px; border-radius: 999px; font-size: 13px; font-weight: 650; }
+    .chip.active { color: white; background: var(--green); border-color: var(--green); }
+
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .card { background: white; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 16px rgba(30,50,35,.035); }
+    .product-art { height: 155px; display: grid; place-items: center; font-size: 68px; position: relative; background: linear-gradient(135deg,#edf3e8,#dfead8); }
+    .product-art.tomato { background: linear-gradient(135deg,#fff0e9,#f7d7c7); }
+    .product-art.grain { background: linear-gradient(135deg,#f8f1dd,#eee2bc); }
+    .product-art.fish { background: linear-gradient(135deg,#e4f3f3,#cce5e4); }
+    .product-art.poultry { background: linear-gradient(135deg,#f5eee5,#e8ddcc); }
+    .badge { position: absolute; top: 12px; left: 12px; background: #fff; color: var(--green); border-radius: 999px; padding: 6px 9px; font-size: 11px; font-weight: 800; }
+    .card-body { padding: 16px; }
+    .card-title-row { display: flex; justify-content: space-between; align-items: start; gap: 8px; }
+    .card h3 { margin: 0; font-size: 17px; }
+    .price { color: var(--green); font-weight: 800; white-space: nowrap; }
+    .price small { color: var(--muted); font-size: 11px; font-weight: 500; }
+    .farmer { color: var(--muted); font-size: 13px; margin: 7px 0; }
+    .meta { display: flex; gap: 12px; flex-wrap: wrap; color: #68736b; font-size: 12px; margin: 12px 0 15px; }
+    .meta span { display: flex; gap: 5px; align-items: center; }
+    .card-actions { display: flex; gap: 8px; }
+    .card-actions .btn { flex: 1; padding: 10px 8px; font-size: 13px; }
+
+    .trust-row { margin: 44px 0; display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+    .trust { background: white; border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: flex; gap: 13px; align-items: center; }
+    .trust-icon { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: var(--green-light); font-size: 20px; }
+    .trust strong { display: block; font-size: 14px; }
+    .trust small { color: var(--muted); }
+
+    .plans { margin: 48px 0; padding: 30px; border-radius: 20px; background: #eff5ef; }
+    .plans-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-top: 20px; }
+    .plan { background: white; border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+    .plan.featured { border: 2px solid var(--green); }
+    .plan h3 { margin: 0 0 8px; }
+    .plan p { color: var(--muted); font-size: 13px; line-height: 1.5; min-height: 40px; }
+    .plan strong { color: var(--green-dark); font-size: 20px; }
+    .plan small { color: var(--muted); font-weight: 500; font-size: 12px; }
+    .plan .btn { width: 100%; margin-top: 14px; }
+
+    footer { border-top: 1px solid var(--line); padding: 24px 0; color: var(--muted); font-size: 13px; }
+    .footer-inner { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+
+    dialog { border: 0; border-radius: 18px; width: min(500px, calc(100% - 28px)); padding: 0; box-shadow: 0 24px 90px rgba(0,0,0,.24); }
+    dialog::backdrop { background: rgba(15,28,19,.52); backdrop-filter: blur(3px); }
+    .modal-head { padding: 20px 22px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+    .modal-head h3 { margin: 0; }
+    .close { border: 0; background: #f1f3f0; border-radius: 50%; width: 32px; height: 32px; font-size: 18px; }
+    .modal-content { padding: 22px; }
+    .modal-content p { color: var(--muted); line-height: 1.5; margin-top: 0; }
+    .form-grid { display: grid; gap: 12px; }
+    .form-grid label { display: grid; gap: 6px; font-size: 13px; font-weight: 700; }
+    .form-grid input, .form-grid select, .form-grid textarea {
+      padding: 11px 12px; border: 1px solid #dfe4dd; border-radius: 9px; background: white; outline-color: var(--green);
+    }
+    .form-grid textarea { min-height: 80px; resize: vertical; }
+    .form-grid .btn { margin-top: 4px; }
+    .toast { position: fixed; bottom: 20px; left: 50%; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; z-index: 10; background: #173e2b; color: white; padding: 12px 18px; border-radius: 11px; box-shadow: var(--shadow); transition: .25s; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (max-width: 850px) {
+      .grid { grid-template-columns: repeat(2,1fr); }
+      .nav-links { display: none; }
+    }
+    @media (max-width: 600px) {
+      .shell { width: min(100% - 24px, 1200px); }
+      .nav { height: 62px; }
+      .nav-actions .btn { padding: 9px 10px; font-size: 12px; }
+      .currency { padding: 8px 5px; max-width: 88px; }
+      .hero { min-height: 330px; padding: 28px 22px; }
+      .hero::after { right: -8px; font-size: 120px; }
+      .search-panel { grid-template-columns: 1fr; margin: -22px 8px 28px; }
+      .search-panel select, .search-panel .btn { min-height: 44px; }
+      .grid, .trust-row, .plans-grid { grid-template-columns: 1fr; }
+      .section-head { align-items: start; }
+      .plans { padding: 20px; }
+      .product-art { height: 145px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="shell nav">
+      <div class="brand"><span class="brand-mark">🌱</span> FarmLink</div>
+      <nav class="nav-links" aria-label="Main navigation">
+        <a href="#market">Marketplace</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#plans">For suppliers</a>
+      </nav>
+      <div class="nav-actions">
+        <select class="currency" id="currency" aria-label="Choose currency">
+          <option value="NGN">NGN ₦</option>
+          <option value="GHS">GHS ₵</option>
+          <option value="KES">KES KSh</option>
+          <option value="USD">USD $</option>
+        </select>
+        <button class="btn btn-primary" onclick="openModal('sellModal')">Sell on FarmLink</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow">Fresh from the farm</div>
+        <h1>Good food.<br>Fair prices. Direct.</h1>
+        <p>Connect with farmers and source fresh produce, poultry, and fish for your shop, restaurant, or home.</p>
+        <button class="btn" onclick="document.querySelector('#market').scrollIntoView({behavior:'smooth'})">Explore produce →</button>
+      </div>
+    </section>
+
+    <div class="search-panel">
+      <div class="search-field"><span>⌕</span><input id="search" type="search" placeholder="Search products, farmers, or locations…"></div>
+      <select id="location">
+        <option value="">All locations</option>
+        <option value="Lagos">Lagos</option>
+        <option value="Kano">Kano</option>
+        <option value="Kumasi">Kumasi</option>
+        <option value="Nakuru">Nakuru</option>
+      </select>
+      <button class="btn btn-primary" onclick="renderProducts()">Search</button>
+    </div>
+
+    <section id="market">
+      <div class="section-head">
+        <div>
+          <h2>Available this week</h2>
+          <p>Harvest-ready products from verified suppliers</p>
+        </div>
+        <button class="text-link" onclick="openModal('bulkModal')">Request a bulk order ↗</button>
+      </div>
+
+      <div class="chips" id="categories"></div>
+      <div class="grid" id="productGrid"></div>
+      <p id="emptyState" style="display:none;color:var(--muted);padding:20px 0;">No listings match your search. Try another product or location.</p>
+    </section>
+
+    <section class="trust-row" id="how-it-works">
+      <div class="trust"><span class="trust-icon">🌿</span><div><strong>Buy directly</strong><small>Connect with the people who grow it.</small></div></div>
+      <div class="trust"><span class="trust-icon">📦</span><div><strong>Order in bulk</strong><small>Ask suppliers for a tailored quotation.</small></div></div>
+      <div class="trust"><span class="trust-icon">🚚</span><div><strong>Coordinate delivery</strong><small>Discuss pickup or delivery with sellers.</small></div></div>
+    </section>
+
+    <section class="plans" id="plans">
+      <div class="section-head" style="margin-top:0">
+        <div>
+          <h2>Grow your farm business</h2>
+          <p>Choose a supplier plan that fits your harvest and sales goals.</p>
+        </div>
+      </div>
+      <div class="plans-grid">
+        <article class="plan">
+          <h3>Starter</h3><p>For farmers getting started with online listings.</p>
+          <strong>Free</strong><small> / to join</small>
+          <button class="btn btn-outline" onclick="openModal('sellModal')">Create a listing</button>
+        </article>
+        <article class="plan featured">
+          <h3>Grow</h3><p>More visibility and tools to manage your harvest listings.</p>
+          <strong>Supplier subscription</strong><small> / recurring</small>
+          <button class="btn btn-primary" onclick="openModal('sellModal')">Get started</button>
+        </article>
+        <article class="plan">
+          <h3>Featured</h3><p>Promote your products to buyers browsing the marketplace.</p>
+          <strong>Premium placement</strong><small> / optional</small>
+          <button class="btn btn-outline" onclick="openModal('sellModal')">Promote products</button>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="shell footer-inner">
+      <span><strong>FarmLink</strong> — helping good food find its market.</span>
+      <span>Supplier subscriptions · Bulk-order commissions · Logistics coordination · Premium listings</span>
+    </div>
+  </footer>
+
+  <dialog id="quoteModal">
+    <div class="modal-head"><h3>Request a quotation</h3><button class="close" onclick="closeModal('quoteModal')" aria-label="Close">×</button></div>
+    <div class="modal-content">
+      <p id="quoteProduct"></p>
+      <form class="form-grid" onsubmit="submitForm(event, 'Your quote request has been sent to the supplier.')">
+        <label>Your name<input required="" placeholder="Name or business"></label>
+        <label>Quantity needed<input required="" placeholder="e.g. 500 kg or 30 crates"></label>
+        <label>Delivery location<input required="" placeholder="Town, city, or market"></label>
+        <label>Notes<textarea placeholder="Preferred delivery date, packaging, or other details"></textarea></label>
+        <button class="btn btn-primary">Send quote request</button>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog id="messageModal">
+    <div class="modal-head"><h3>Message supplier</h3><button class="close" onclick="closeModal('messageModal')" aria-label="Close">×</button></div>
+    <div class="modal-content">
+      <p id="messageSupplier"></p>
+      <form class="form-grid" onsubmit="submitForm(event, 'Your message has been sent.')">
+        <label>Your name<input required="" placeholder="Name or business"></label>
+        <label>Message<textarea required="" placeholder="Ask about availability, quality, or delivery…"></textarea></label>
+        <button class="btn btn-primary">Send message</button>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog id="bulkModal">
+    <div class="modal-head"><h3>Request a bulk order</h3><button class="close" onclick="closeModal('bulkModal')" aria-label="Close">×</button></div>
+    <div class="modal-content">
+      <p>Tell suppliers what you need. They can respond with availability, pricing, and delivery options.</p>
+      <form class="form-grid" onsubmit="submitForm(event, 'Your bulk-order request has been shared with suppliers.')">
+        <label>Product
+          <select required="">
+            <option value="">Choose a product</option>
+            <option>Maize</option><option>Rice</option><option>Tomatoes</option><option>Plantain</option>
+            <option>Cassava</option><option>Poultry</option><option>Fish</option><option>Vegetables</option>
+          </select>
+        </label>
+        <label>Quantity<input required="" placeholder="e.g. 2 tonnes, 100 crates"></label>
+        <label>Delivery location<input required="" placeholder="Town, city, or market"></label>
+        <label>When do you need it?<input type="date" required=""></label>
+        <label>Additional details<textarea placeholder="Quality, packaging, delivery, or other requirements"></textarea></label>
+        <button class="btn btn-primary">Send bulk request</button>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog id="sellModal">
+    <div class="modal-head"><h3>Join FarmLink as a supplier</h3><button class="close" onclick="closeModal('sellModal')" aria-label="Close">×</button></div>
+    <div class="modal-content">
+      <p>Share your harvest availability with retailers, restaurants, wholesalers, and consumers.</p>
+      <form class="form-grid" onsubmit="submitForm(event, 'Thanks! Your supplier interest has been recorded.')">
+        <label>Farm or business name<input required="" placeholder="Business name"></label>
+        <label>Contact person<input required="" placeholder="Your name"></label>
+        <label>Phone or email<input required="" placeholder="How buyers can reach you"></label>
+        <label>Products you sell<input required="" placeholder="e.g. maize, tomatoes, poultry"></label>
+        <button class="btn btn-primary">Register interest</button>
+      </form>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    const products = [
+      { name: "Fresh tomatoes", category: "Tomatoes", emoji: "🍅", class: "tomato", price: 1450, unit: "crate", farmer: "Green Valley Farms", location: "Lagos", available: "Harvesting now", quantity: "120 crates", tag: "Harvest ready" },
+      { name: "White maize", category: "Maize", emoji: "🌽", class: "grain", price: 820, unit: "kg", farmer: "Amina Community Farm", location: "Kano", available: "Available now", quantity: "4.5 tonnes", tag: "Bulk available" },
+      { name: "Long-grain rice", category: "Rice", emoji: "🌾", class: "grain", price: 1100, unit: "kg", farmer: "Sunrise Rice Growers", location: "Kumasi", available: "Harvesting now", quantity: "2 tonnes", tag: "New harvest" },
+      { name: "Ripe plantain", category: "Plantain", emoji: "🍌", class: "", price: 950, unit: "bunch", farmer: "Olu Farms Cooperative", location: "Lagos", available: "Available now", quantity: "80 bunches", tag: "Popular" },
+      { name: "Fresh cassava", category: "Cassava", emoji: "🥔", class: "", price: 500, unit: "kg", farmer: "Nakuru Harvest Hub", location: "Nakuru", available: "Ready in 2 days", quantity: "1.8 tonnes", tag: "Pre-order" },
+      { name: "Farm-raised chicken", category: "Poultry", emoji: "🐓", class: "poultry", price: 7200, unit: "bird", farmer: "Meadow Poultry", location: "Kano", available: "Available now", quantity: "200 birds", tag: "Verified supplier" },
+      { name: "Fresh tilapia", category: "Fish", emoji: "🐟", class: "fish", price: 3900, unit: "kg", farmer: "Lakeview Fish Farm", location: "Kumasi", available: "Available today", quantity: "350 kg", tag: "Fresh catch" },
+      { name: "Mixed leafy vegetables", category: "Vegetables", emoji: "🥬", class: "", price: 650, unit: "bundle", farmer: "Green Valley Farms", location: "Lagos", available: "Harvesting now", quantity: "90 bundles", tag: "Organic options" }
+    ];
+
+    const categories = ["All products", "Maize", "Rice", "Tomatoes", "Plantain", "Cassava", "Poultry", "Fish", "Vegetables"];
+    const currencyInfo = {
+      NGN: { symbol: "₦", rate: 1 },
+      GHS: { symbol: "₵", rate: 0.0095 },
+      KES: { symbol: "KSh ", rate: 0.115 },
+      USD: { symbol: "$", rate: 0.00065 }
+    };
+    let activeCategory = "All products";
+
+    function buildCategories() {
+      const root = document.getElementById("categories");
+      root.innerHTML = categories.map(c =>
+        `<button class="chip ${c === activeCategory ? "active" : ""}" onclick="setCategory('${c}')">${c}</button>`
+      ).join("");
+    }
+
+    function money(amount) {
+      const selected = currencyInfo[document.getElementById("currency").value];
+      return selected.symbol + Math.round(amount * selected.rate).toLocaleString();
+    }
+
+    function renderProducts() {
+      const query = document.getElementById("search").value.trim().toLowerCase();
+      const location = document.getElementById("location").value;
+      const filtered = products.filter(p => {
+        const matchesCategory = activeCategory === "All products" || p.category === activeCategory;
+        const matchesQuery = !query || `${p.name} ${p.farmer} ${p.category} ${p.location}`.toLowerCase().includes(query);
+        const matchesLocation = !location || p.location === location;
+        return matchesCategory && matchesQuery && matchesLocation;
+      });
+
+      document.getElementById("productGrid").innerHTML = filtered.map((p, i) => `
+        <article class="card">
+          <div class="product-art ${p.class}">
+            <span class="badge">${p.tag}</span>${p.emoji}
+          </div>
+          <div class="card-body">
+            <div class="card-title-row">
+              <h3>${p.name}</h3>
+              <div class="price">${money(p.price)} <small>/ ${p.unit}</small></div>
+            </div>
+            <div class="farmer">by ${p.farmer}</div>
+            <div class="meta">
+              <span>📍 ${p.location}</span><span>📦 ${p.quantity}</span><span>🗓 ${p.available}</span>
+            </div>
+            <div class="card-actions">
+              <button class="btn btn-primary" onclick="openQuote(${products.indexOf(p)})">Request quote</button>
+              <button class="btn btn-light" onclick="openMessage(${products.indexOf(p)})">Message</button>
+            </div>
+          </div>
+        </article>
+      `).join("");
+      document.getElementById("emptyState").style.display = filtered.length ? "none" : "block";
+    }
+
+    function setCategory(category) {
+      activeCategory = category;
+      buildCategories();
+      renderProducts();
+    }
+
+    function openModal(id) { document.getElementById(id).showModal(); }
+    function closeModal(id) { document.getElementById(id).close(); }
+
+    function openQuote(index) {
+      const p = products[index];
+      document.getElementById("quoteProduct").textContent =
+        `Request pricing and availability for ${p.name} from ${p.farmer}.`;
+      openModal("quoteModal");
+    }
+
+    function openMessage(index) {
+      document.getElementById("messageSupplier").textContent =
+        `Start a conversation with ${products[index].farmer} about ${products[index].name}.`;
+      openModal("messageModal");
+    }
+
+    function submitForm(event, message) {
+      event.preventDefault();
+      event.target.reset();
+      document.querySelectorAll("dialog[open]").forEach(dialog => dialog.close());
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 3200);
+    }
+
+    document.getElementById("search").addEventListener("input", renderProducts);
+    document.getElementById("location").addEventListener("change", renderProducts);
+    document.getElementById("currency").addEventListener("change", renderProducts);
+
+    buildCategories();
+    renderProducts();
+  </script>
+
+
+</body></html>
